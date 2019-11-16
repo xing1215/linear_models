@@ -1,0 +1,84 @@
+---
+title: "linear models"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(p8105.datasets)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+set.seed(1)
+```
+
+## Model fitting
+
+```{r}
+data("nyc_airbnb")
+
+nyc_airbnb = 
+  nyc_airbnb %>% 
+  mutate(stars = review_scores_location / 2) %>% 
+  rename(
+    boro = neighbourhood_group,
+    neighborhood = neighbourhood) %>% 
+  filter(boro != "Staten Island") %>% 
+  select(price, stars, boro, neighborhood, room_type)
+```
+
+fit a first linear model
+
+```{r}
+fit = lm(price ~ stars + boro, data = nyc_airbnb)
+fit 
+
+summary(fit)
+coef(fit)
+summary(fit)$coef
+```
+
+tidy the results
+
+```{r}
+fit %>% 
+  broom::tidy() %>% 
+  mutate(term = str_replace(term, "boro", "Boro: ")) %>% 
+  knitr::kable(digits = 3)
+
+fit %>% 
+  broom::glance()
+```
+
+change the reference group from brooklyn to manhattan
+
+```{r}
+nyc_airbnb = 
+  nyc_airbnb %>% 
+  mutate(
+    boro = fct_infreq(boro),
+    room_type = fct_infreq(room_type)
+  )
+
+fit = lm(price ~ stars + boro, data = nyc_airbnb) %>% 
+  broom::tidy()
+```
+
+
+## 
+
+
+
